@@ -87,7 +87,13 @@ function require_admin_or_manager(): void
 {
     $user = current_user();
 
-    if ($user === null || !in_array($user['role'], ['admin', 'manager'], true)) {
+    if ($user === null) {
+        $prefix = rtrim(BASE_URL, '/');
+        header('Location: ' . ($prefix === '' ? '' : $prefix) . '/login.php');
+        exit;
+    }
+
+    if (!in_array($user['role'], ['admin', 'manager'], true)) {
         http_response_code(403);
         exit('Forbidden');
     }
