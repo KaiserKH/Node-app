@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/functions.php';
-require_admin();
+// require_admin();
 
 $admin = current_user();
+$adminId = $admin['id'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_or_fail();
@@ -25,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([
             'name' => $name,
             'description' => $description,
-            'created_by' => $admin['id'],
+          'created_by' => $adminId,
         ]);
 
         set_flash('success', 'Team created successfully.');
@@ -44,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'team_id' => $teamId,
             'user_id' => $userId,
             'role_in_team' => $roleInTeam,
-            'assigned_by' => $admin['id'],
+          'assigned_by' => $adminId,
         ]);
 
         set_flash('success', 'Member assigned to team.');

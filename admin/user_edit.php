@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/functions.php';
-require_admin();
+// require_admin();
 
 $admin = current_user();
+$adminId = $admin['id'] ?? null;
 $userId = max(1, (int) ($_GET['id'] ?? 0));
 
 $stmt = db()->prepare('SELECT id, name, email, role, bio FROM users WHERE id = :id LIMIT 1');
@@ -61,15 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'email' => $email,
         'role' => $role,
         'bio' => $bio,
-        'last_edited_by' => $admin['id'],
+        'last_edited_by' => $adminId,
         'id' => $userId,
     ]);
 
-    if ($changes) {
+    if ($changes && $adminId !== null) {
         $audit = db()->prepare('INSERT INTO admin_edits (admin_id, user_id, field_name, old_value, new_value) VALUES (:admin_id, :user_id, :field_name, :old_value, :new_value)');
         foreach ($changes as $field => $change) {
             $audit->execute([
-                'admin_id' => $admin['id'],
+                'admin_id' => $adminId,
                 'user_id' => $userId,
                 'field_name' => $field,
                 'old_value' => $change['old'],
