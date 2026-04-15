@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Village Connect Logo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#43cea2"/>
+      <stop offset="100%" stop-color="#185a9d"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#g)"/>
+  <path d="M20 70 L38 47 L52 62 L71 36 L99 70" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="38" cy="46" r="6" fill="#ffd700"/>
+  <circle cx="71" cy="36" r="6" fill="#ffd700"/>
+  <text x="60" y="104" text-anchor="middle" font-family="Ubuntu, sans-serif" font-size="16" fill="#ffffff" font-weight="700">VCSR</text>
+</svg>

@@ -37,6 +37,7 @@ require __DIR__ . '/includes/header.php';
     <h2>Your Stats</h2>
     <p>Complaints raised: <strong><?= $myComplaintCount ?></strong></p>
     <p>Media uploaded: <strong><?= $myMediaCount ?></strong></p>
+    <a class="btn secondary" href="profile.php">Update Profile / Change Password</a>
   </article>
 
   <?php if (in_array($user['role'], ['admin', 'manager'], true)): ?>
@@ -44,7 +45,10 @@ require __DIR__ . '/includes/header.php';
       <h2>Management Stats</h2>
       <p>Total users: <strong><?= $allUsers ?></strong></p>
       <p>Total complaints: <strong><?= $allComplaints ?></strong></p>
-      <a class="btn" href="admin/index.php">Open Admin Panel</a>
+      <?php if ($user['role'] === 'admin'): ?>
+        <a class="btn" href="admin/index.php">Open Admin Panel</a>
+      <?php endif; ?>
+      <a class="btn secondary" href="complaints.php?status=open">Review Open Complaints</a>
     </article>
   <?php endif; ?>
 </section>

@@ -7,6 +7,35 @@ require_once __DIR__ . '/csrf.php';
 
 start_secure_session();
 
+function ensure_schema_upgrades(): void
+{
+    static $done = false;
+
+    if ($done) {
+        return;
+    }
+
+    $done = true;
+
+    $queries = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20) NULL AFTER email",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS village VARCHAR(120) NULL AFTER phone",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT NULL AFTER village",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS gender ENUM('male', 'female', 'other', 'prefer_not_to_say') NULL AFTER address",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE NULL AFTER gender",
+    ];
+
+    try {
+        foreach ($queries as $sql) {
+            db()->exec($sql);
+        }
+    } catch (Throwable $e) {
+        // Ignore migration failures to avoid breaking requests on restricted DB users.
+    }
+}
+
+ensure_schema_upgrades();
+
 function e(?string $value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
@@ -99,4 +128,9 @@ function save_media_upload(array $file): array
         'media_type' => $mediaType,
         'mime' => $mime,
     ];
+}
+
+function is_valid_phone(string $phone): bool
+{
+    return (bool) preg_match('/^[0-9+\-\s]{7,20}$/', $phone);
 }

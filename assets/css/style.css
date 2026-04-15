@@ -23,6 +23,14 @@ body {
   font-family: "Supermercado One", sans-serif;
 }
 
+.app-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  margin-bottom: 10px;
+}
+
 .tagline {
   margin-top: 10px;
   font-size: 1rem;

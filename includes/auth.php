@@ -54,6 +54,18 @@ function login_user(array $user): void
 {
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $user['id'];
+    $_SESSION['admin_authenticated'] = false;
+}
+
+function mark_admin_authenticated(): void
+{
+    $_SESSION['admin_authenticated'] = true;
+    $_SESSION['admin_authenticated_at'] = time();
+}
+
+function is_admin_authenticated(): bool
+{
+    return !empty($_SESSION['admin_authenticated']) && has_role('admin');
 }
 
 function logout_user(): void
@@ -105,4 +117,16 @@ function require_admin(): void
         http_response_code(403);
         exit('Admins only.');
     }
+}
+
+function require_admin_login(): void
+{
+    if (is_admin_authenticated()) {
+        return;
+    }
+
+    $next = urlencode((string) ($_SERVER['REQUEST_URI'] ?? '/admin/index.php'));
+    $prefix = rtrim(BASE_URL, '/');
+    header('Location: ' . ($prefix === '' ? '' : $prefix) . '/admin/login.php?next=' . $next);
+    exit;
 }

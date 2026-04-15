@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/functions.php';
-// require_admin();
+require_admin_login();
 
 $admin = current_user();
 $adminId = $admin['id'] ?? null;
@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = strtolower(trim((string) ($_POST['email'] ?? '')));
     $role = (string) ($_POST['role'] ?? 'user');
     $bio = trim((string) ($_POST['bio'] ?? ''));
+    $newPassword = (string) ($_POST['new_password'] ?? '');
 
     if ($name === '' || $email === '') {
         set_flash('error', 'Name and email are required.');
@@ -38,6 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!in_array($role, ['user', 'manager', 'admin'], true)) {
         set_flash('error', 'Invalid role.');
+        redirect('user_edit.php?id=' . $userId);
+    }
+
+    if ($newPassword !== '' && strlen($newPassword) < 8) {
+        set_flash('error', 'Temporary password must be at least 8 characters.');
         redirect('user_edit.php?id=' . $userId);
     }
 
@@ -56,15 +62,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $update = db()->prepare('UPDATE users SET name = :name, email = :email, role = :role, bio = :bio, last_edited_by = :last_edited_by WHERE id = :id');
-    $update->execute([
+    if ($newPassword !== '') {
+        $changes['password_hash'] = ['old' => '[hidden]', 'new' => '[reset by admin]'];
+    }
+
+    $sql = 'UPDATE users SET name = :name, email = :email, role = :role, bio = :bio, last_edited_by = :last_edited_by';
+    $params = [
         'name' => $name,
         'email' => $email,
         'role' => $role,
         'bio' => $bio,
         'last_edited_by' => $adminId,
         'id' => $userId,
-    ]);
+    ];
+
+    if ($newPassword !== '') {
+        $sql .= ', password_hash = :password_hash';
+        $params['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
+    }
+
+    $sql .= ' WHERE id = :id';
+    $update = db()->prepare($sql);
+    $update->execute($params);
 
     if ($changes && $adminId !== null) {
         $audit = db()->prepare('INSERT INTO admin_edits (admin_id, user_id, field_name, old_value, new_value) VALUES (:admin_id, :user_id, :field_name, :old_value, :new_value)');
@@ -108,6 +127,9 @@ require __DIR__ . '/../includes/header.php';
 
     <label for="bio">Bio</label>
     <textarea id="bio" name="bio" maxlength="1000"><?= e($target['bio'] ?? '') ?></textarea>
+
+        <label for="new_password">Set Temporary Password (optional)</label>
+        <input id="new_password" name="new_password" type="password" minlength="8" placeholder="Leave blank to keep existing password">
 
     <button type="submit">Save Changes</button>
   </form>

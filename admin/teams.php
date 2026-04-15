@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/functions.php';
-// require_admin();
+require_admin_login();
 
 $admin = current_user();
 $adminId = $admin['id'] ?? null;
@@ -51,11 +51,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         set_flash('success', 'Member assigned to team.');
         redirect('teams.php');
     }
+
+      if ($action === 'remove_member') {
+        $teamId = max(1, (int) ($_POST['team_id'] ?? 0));
+        $userId = max(1, (int) ($_POST['user_id'] ?? 0));
+
+        $stmt = db()->prepare('DELETE FROM team_members WHERE team_id = :team_id AND user_id = :user_id');
+        $stmt->execute([
+          'team_id' => $teamId,
+          'user_id' => $userId,
+        ]);
+
+        set_flash('success', 'Team member removed.');
+        redirect('teams.php');
+      }
+
+      if ($action === 'delete_team') {
+        $teamId = max(1, (int) ($_POST['team_id'] ?? 0));
+
+        $stmt = db()->prepare('DELETE FROM teams WHERE id = :id');
+        $stmt->execute(['id' => $teamId]);
+
+        set_flash('success', 'Team deleted.');
+        redirect('teams.php');
+      }
 }
 
 $teams = db()->query('SELECT t.id, t.name, t.description, t.created_at, u.name AS creator_name FROM teams t LEFT JOIN users u ON u.id = t.created_by ORDER BY t.id DESC')->fetchAll();
 $users = db()->query("SELECT id, name, role FROM users ORDER BY name ASC")->fetchAll();
-$members = db()->query('SELECT tm.team_id, tm.role_in_team, u.name AS user_name, t.name AS team_name
+$members = db()->query('SELECT tm.team_id, tm.user_id, tm.role_in_team, u.name AS user_name, t.name AS team_name
                         FROM team_members tm
                         JOIN users u ON u.id = tm.user_id
                         JOIN teams t ON t.id = tm.team_id
@@ -154,6 +178,7 @@ require __DIR__ . '/../includes/header.php';
             <th>Team</th>
             <th>User</th>
             <th>Role</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -162,12 +187,38 @@ require __DIR__ . '/../includes/header.php';
               <td><?= e($member['team_name']) ?></td>
               <td><?= e($member['user_name']) ?></td>
               <td><?= e($member['role_in_team']) ?></td>
+              <td>
+                <form method="post">
+                  <?= csrf_input() ?>
+                  <input type="hidden" name="action" value="remove_member">
+                  <input type="hidden" name="team_id" value="<?= (int) $member['team_id'] ?>">
+                  <input type="hidden" name="user_id" value="<?= (int) $member['user_id'] ?>">
+                  <button type="submit" class="btn warning">Remove</button>
+                </form>
+              </td>
             </tr>
           <?php endforeach; ?>
         </tbody>
       </table>
     </div>
   <?php endif; ?>
+</section>
+
+<section class="card">
+  <h2>Delete Team</h2>
+  <form method="post">
+    <?= csrf_input() ?>
+    <input type="hidden" name="action" value="delete_team">
+
+    <label for="team_delete_id">Select Team</label>
+    <select id="team_delete_id" name="team_id" required>
+      <?php foreach ($teams as $team): ?>
+        <option value="<?= (int) $team['id'] ?>"><?= e($team['name']) ?></option>
+      <?php endforeach; ?>
+    </select>
+
+    <button type="submit" class="btn warning">Delete Selected Team</button>
+  </form>
 </section>
 
 <?php require __DIR__ . '/../includes/footer.php';

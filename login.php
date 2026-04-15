@@ -8,24 +8,32 @@ if (is_logged_in()) {
     redirect('dashboard.php');
 }
 
+$next = (string) ($_GET['next'] ?? $_POST['next'] ?? 'dashboard.php');
+if (!preg_match('/^[a-zA-Z0-9_\-\/\.\?=&%]+$/', $next) || str_contains($next, '://')) {
+  $next = 'dashboard.php';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_or_fail();
 
     $email = strtolower(trim((string) ($_POST['email'] ?? '')));
     $password = (string) ($_POST['password'] ?? '');
 
-    $stmt = db()->prepare('SELECT id, password_hash FROM users WHERE email = :email LIMIT 1');
+    $stmt = db()->prepare('SELECT id, password_hash, role FROM users WHERE email = :email LIMIT 1');
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
 
     if (!$user || !password_verify($password, $user['password_hash'])) {
         set_flash('error', 'Invalid credentials.');
-        redirect('login.php');
+      redirect('login.php?next=' . urlencode($next));
     }
 
     login_user($user);
+    if (($user['role'] ?? '') === 'admin') {
+      mark_admin_authenticated();
+    }
     set_flash('success', 'Welcome back!');
-    redirect('dashboard.php');
+    redirect($next);
 }
 
 $pageTitle = APP_NAME . ' - Login';
@@ -36,6 +44,8 @@ require __DIR__ . '/includes/header.php';
   <h2>Login</h2>
   <form method="post">
     <?= csrf_input() ?>
+    <input type="hidden" name="next" value="<?= e($next) ?>">
+
     <label for="email">Email</label>
     <input id="email" name="email" type="email" required maxlength="190">
 

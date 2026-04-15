@@ -5,13 +5,16 @@ Responsive rural service platform with secure authentication, profile media uplo
 ## Features
 
 - User registration and login with hashed passwords
+- Extended registration fields (phone, village, address, gender, date of birth)
 - Secure session handling and CSRF protection
 - Profile management with avatar upload
+- Profile password change with current password verification
 - Upload and view image, video, and audio files
 - Complaint creation and status tracking
 - Jobs and schemes publishing
 - Role-based access: `user`, `manager`, `admin`
-- Admin panel for user management and management teams
+- Admin login page (`admin/login.php`) and admin-only panel access
+- Admin panel for user management, team management, content update actions, and URL-based filtering
 - Admin audit tracking with user profile watermark:
   - Edited by <admin name> and timestamp
   - Field-level edit logs in `admin_edits`
@@ -27,6 +30,7 @@ Responsive rural service platform with secure authentication, profile media uplo
 - `complaint_new.php`, `complaints.php` Complaint module
 - `jobs.php`, `schemes.php` Public/manager content modules
 - `admin/` Admin and team-management pages
+	- `admin/login.php` Admin authentication entry
 - `config/` App and DB configuration
 - `includes/` Shared PHP utilities, auth, CSRF, layout
 - `database/schema.sql` MySQL schema + default admin seed
@@ -52,6 +56,12 @@ Responsive rural service platform with secure authentication, profile media uplo
 - Password: `Admin@12345`
 
 Change this password immediately after first login.
+
+## Admin Access
+
+- Admin UI entry: `admin/login.php`
+- Admin panel requires admin credentials, but no server-level folder restriction is required.
+- Anyone can open the admin login URL, but only admin users can authenticate and access admin controls.
 
 ## Security Notes
 

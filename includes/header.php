@@ -29,6 +29,7 @@ function app_link(string $basePath, string $path): string
 </head>
 <body>
 <header class="hero">
+  <img class="app-logo" src="<?= e(app_link($basePath, 'assets/img/logo.svg')) ?>" alt="Village Connect SRP Logo">
   <h1><?= e(APP_NAME) ?></h1>
   <p class="tagline">A rural system platform (RSP)</p>
 
@@ -40,6 +41,7 @@ function app_link(string $basePath, string $path): string
     <?php else: ?>
       <a href="<?= e(app_link($basePath, 'register.php')) ?>">Registration</a>
       <a href="<?= e(app_link($basePath, 'login.php')) ?>">Login</a>
+      <a href="<?= e(app_link($basePath, 'admin/login.php')) ?>">Admin Login</a>
     <?php endif; ?>
   </div>
 </header>
@@ -52,7 +54,7 @@ function app_link(string $basePath, string $path): string
     <li><a href="<?= e(app_link($basePath, 'jobs.php')) ?>">Jobs</a></li>
     <li><a href="<?= e(app_link($basePath, 'schemes.php')) ?>">Scheme</a></li>
     <li><a href="<?= e(app_link($basePath, 'upload.php')) ?>">Media</a></li>
-    <?php if ($user && in_array($user['role'], ['admin', 'manager'], true)): ?>
+    <?php if ($user && $user['role'] === 'admin'): ?>
       <li><a href="<?= e(app_link($basePath, 'admin/index.php')) ?>">Admin</a></li>
     <?php endif; ?>
   </ul>
